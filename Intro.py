@@ -8,6 +8,7 @@ display_height = 600
 black = (0,0,0)
 white = (255,255,255)
 red = (255,0,0)
+block_color = (53,115,255)
 car_width = 128
 
 gameDisplay = pygame.display.set_mode((display_width,display_height))
@@ -16,7 +17,10 @@ pygame.display.set_caption('A bit Racey')
 clock = pygame.time.Clock()
 
 carImg = pygame.image.load('car.png')
-
+def things_dodged(count):
+	font = pygame.font.SysFont(None,25)
+	text = font.render("Dodged: "+str(count),True,black)
+	gameDisplay.blit(text,(0,0))
 def things(thingx,thingy,thingw,thingh,color):
 	pygame.draw.rect(gameDisplay,color,[thingx,thingy,thingw,thingh])
 
@@ -45,10 +49,10 @@ def game_loop():
 	x_change = 0
 	thing_startx = random.randrange(0,display_width)
 	thing_starty = -600
-	thing_speed = 7
+	thing_speed = 4
 	thing_width = 100
 	thing_height = 100
-
+	dodge = 0
 	gameExit = False
 
 	while not gameExit:
@@ -66,15 +70,26 @@ def game_loop():
 		x += x_change 
 		gameDisplay.fill(white)
 
-		things(thing_startx,thing_starty,thing_width,thing_height,black)
+		things(thing_startx,thing_starty,thing_width,thing_height,block_color)
 		thing_starty += thing_speed
 		car(x,y)
+		things_dodged(dodge)
 		# x is left top corner
 		if x > display_width-car_width or x < 0:
 			crash()
 		if thing_starty > display_height:
 			thing_starty = 0 - thing_height
-			thing_startx = random.randrange(0,display_width - thing_width) 
+			thing_startx = random.randrange(0,display_width)
+			dodge += 1
+			thing_speed += 1
+			thing_width += (dodge*0.2)
+
+		if y < thing_starty+thing_height:
+			print("y crossover")
+			if x > thing_startx and x < thing_startx+thing_width or x+car_width > thing_startx and x+car_width < thing_startx+thing_width:
+				crash()
+
+
 		pygame.display.update()
 		#fram/second
 		clock.tick(60)
